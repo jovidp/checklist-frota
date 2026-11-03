@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Sistema de checklist de inspeção de caminhões">
+  <meta name="theme-color" content="#0f3547" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0b1c25" media="(prefers-color-scheme: dark)">
+  <title>Checklist de Caminhões</title>
+  <link rel="stylesheet" href="/css/estilo.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🚚</text></svg>">
+</head>
+<body>
+
+  <!-- ===================== TELA DE LOGIN ===================== -->
+  <section id="tela-login" class="tela-login" hidden>
+    <div class="login-caixa">
+      <header class="login-marca">
+        <div class="login-logo" aria-hidden="true">🚚</div>
+        <h1>Checklist de Caminhões</h1>
+        <p class="login-sub">Inspeção diária da frota</p>
+      </header>
+
+      <form id="form-login" class="login-form" novalidate autocomplete="on">
+        <div class="campo">
+          <label for="login-email">E-mail</label>
+          <input type="email" id="login-email" name="email" autocomplete="username"
+                 inputmode="email" placeholder="voce@transporte.com" required>
+        </div>
+
+        <div class="campo">
+          <label for="login-senha">Senha</label>
+          <input type="password" id="login-senha" name="senha"
+                 autocomplete="current-password" placeholder="Sua senha" required>
+        </div>
+
+        <p id="login-erro" class="login-erro" role="alert" hidden></p>
+
+        <button type="submit" id="btn-entrar" class="btn btn-primario btn-bloco">Entrar</button>
+      </form>
+
+      <p class="login-rodape">Acesso restrito à administração do transporte.</p>
+    </div>
+  </section>
+
+  <!-- ===================== APLICAÇÃO ===================== -->
+  <div id="app" class="app" hidden>
+
+    <header class="cabecalho" id="cabecalho">
+      <div class="cabecalho-interno">
+        <a class="cabecalho-marca" href="#/">
+          <span class="cabecalho-logo" aria-hidden="true">🚚</span>
+          <span class="cabecalho-titulo">Checklist de Caminhões</span>
+        </a>
+
+        <button type="button" id="btn-menu" class="btn-icone menu-alternar"
+                aria-label="Abrir menu de navegação" aria-expanded="false" aria-controls="navegacao">
+          <span class="hamburguer" aria-hidden="true"></span>
+        </button>
+
+        <div class="cabecalho-usuario">
+          <span class="usuario-info">
+            <strong id="usuario-nome">—</strong>
+            <span id="usuario-perfil" class="badge badge-neutro">—</span>
+          </span>
+          <button type="button" id="btn-sair" class="btn btn-secundario btn-pequeno">Sair</button>
+        </div>
+      </div>
+
+      <nav id="navegacao" class="navegacao" aria-label="Navegação principal">
+        <a class="nav-link" href="#/" data-rota="/">Início</a>
+        <a class="nav-link" href="#/novo" data-rota="/novo">Novo checklist</a>
+        <a class="nav-link" href="#/historico" data-rota="/historico">Histórico</a>
+        <a class="nav-link" href="#/veiculos" data-rota="/veiculos">Veículos</a>
+        <a class="nav-link" href="#/relatorios" data-rota="/relatorios">Relatórios</a>
+        <a class="nav-link nav-admin" href="#/usuarios" data-rota="/usuarios" hidden>Usuários</a>
+        <a class="nav-link nav-admin" href="#/auditoria" data-rota="/auditoria" hidden>Auditoria</a>
+      </nav>
+    </header>
+
+    <main id="conteudo" class="conteudo" tabindex="-1"></main>
+
+    <footer class="rodape">
+      <span>Checklist de Caminhões</span>
+      <span aria-hidden="true">·</span>
+      <span id="rodape-versao">v1.0.0</span>
+    </footer>
+  </div>
+
+  <!-- Camadas globais: modal e avisos -->
+  <div id="modal-fundo" class="modal-fundo" hidden></div>
+  <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

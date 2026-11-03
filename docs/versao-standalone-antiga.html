@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Checklist de Caminhões</title>
+<style>
+  :root{
+    --bg:#f4f6f8; --card:#fff; --line:#dde3ea; --txt:#1c2430; --muted:#68758a;
+    --brand:#12508c; --brand-d:#0d3c6b;
+    --ok:#1a7f45; --ok-bg:#e6f5ec;
+    --nc:#c02a2a; --nc-bg:#fdeaea;
+    --na:#7a6a12; --na-bg:#fdf6dd;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--txt)}
+  header{background:var(--brand);color:#fff;padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+  header h1{font-size:18px;margin:0;letter-spacing:.3px}
+  header h1 small{display:block;font-weight:400;font-size:12px;opacity:.8}
+  nav{display:flex;gap:8px}
+  nav button{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:14px}
+  nav button.active{background:#fff;color:var(--brand);font-weight:600}
+  main{max-width:900px;margin:0 auto;padding:18px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:8px;margin-bottom:16px;overflow:hidden}
+  .card > h2{margin:0;padding:11px 14px;font-size:14px;text-transform:uppercase;letter-spacing:.6px;background:#eef2f7;border-bottom:1px solid var(--line);color:var(--brand-d)}
+  .pad{padding:14px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+  input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff;color:var(--txt)}
+  input:focus,select:focus,textarea:focus{outline:2px solid #9dc2e8;border-color:var(--brand)}
+  textarea{resize:vertical;min-height:64px}
+
+  .item{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 14px;border-bottom:1px solid #eef1f5}
+  .item:last-child{border-bottom:0}
+  .item:nth-child(even){background:#fafbfc}
+  .item .nome{flex:1 1 190px;font-weight:600;font-size:14px}
+  .item .nome span{display:block;font-weight:400;font-size:11px;color:var(--muted)}
+  .opts{display:flex;gap:6px}
+  .opts label{margin:0;cursor:pointer}
+  .opts input{position:absolute;opacity:0;width:0;height:0}
+  .opts span{display:inline-block;padding:7px 12px;border:1px solid var(--line);border-radius:6px;font-size:12.5px;font-weight:700;background:#fff;color:var(--muted);text-transform:none;letter-spacing:0;user-select:none}
+  .opts input:focus-visible + span{outline:2px solid #9dc2e8}
+  .opts input[value="OK"]:checked + span{background:var(--ok-bg);border-color:var(--ok);color:var(--ok)}
+  .opts input[value="NC"]:checked + span{background:var(--nc-bg);border-color:var(--nc);color:var(--nc)}
+  .opts input[value="NA"]:checked + span{background:var(--na-bg);border-color:var(--na);color:var(--na)}
+  .item .obs{flex:1 1 100%;max-width:100%}
+  .item .obs input{font-size:13px;padding:6px 8px}
+
+  .bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0}
+  .btn{background:var(--brand);color:#fff;border:0;padding:11px 20px;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer}
+  .btn:hover{background:var(--brand-d)}
+  .btn.sec{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+  .btn.danger{background:#fff;color:var(--nc);border:1px solid var(--nc)}
+  .btn.sm{padding:7px 12px;font-size:13px}
+
+  .resumo{display:flex;flex-wrap:wrap;gap:10px;padding:14px}
+  .chip{padding:8px 14px;border-radius:20px;font-weight:700;font-size:13px}
+  .chip.ok{background:var(--ok-bg);color:var(--ok)} .chip.nc{background:var(--nc-bg);color:var(--nc)}
+  .chip.na{background:var(--na-bg);color:var(--na)} .chip.pend{background:#e9edf2;color:var(--muted)}
+  .status{margin-left:auto;padding:8px 16px;border-radius:6px;font-weight:800;font-size:13px;letter-spacing:.5px}
+  .status.aprovado{background:var(--ok);color:#fff}
+  .status.restricao{background:#c9820a;color:#fff}
+  .status.reprovado{background:var(--nc);color:#fff}
+
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:#eef2f7;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--brand-d)}
+  tbody tr:hover{background:#f7fafd}
+  .tag{padding:3px 9px;border-radius:12px;font-size:11.5px;font-weight:700}
+  .tag.aprovado{background:var(--ok-bg);color:var(--ok)}
+  .tag.restricao{background:#fdf0d9;color:#a06a05}
+  .tag.reprovado{background:var(--nc-bg);color:var(--nc)}
+  .vazio{padding:40px 14px;text-align:center;color:var(--muted)}
+  .hide{display:none !important}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1c2430;color:#fff;padding:12px 22px;border-radius:6px;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:99}
+
+  /* --- Visualização / impressão --- */
+  #view .linha{display:flex;gap:10px;padding:7px 14px;border-bottom:1px solid #eef1f5;font-size:14px;align-items:baseline}
+  #view .linha b{flex:1 1 190px;font-weight:600}
+  #view .linha .st{font-weight:800;font-size:12.5px;padding:2px 10px;border-radius:4px;white-space:nowrap}
+  #view .linha .st.OK{background:var(--ok-bg);color:var(--ok)}
+  #view .linha .st.NC{background:var(--nc-bg);color:var(--nc)}
+  #view .linha .st.NA{background:var(--na-bg);color:var(--na)}
+  #view .linha .o{flex:2 1 200px;color:var(--muted);font-size:13px}
+  .assin{display:grid;grid-template-columns:1fr 1fr;gap:40px;padding:40px 14px 14px;text-align:center;font-size:13px}
+  .assin div{border-top:1px solid #333;padding-top:6px}
+
+  @media print{
+    header,nav,.bar,.noprint{display:none !important}
+    body{background:#fff;font-size:12px}
+    main{max-width:none;padding:0}
+    .card{border:1px solid #999;page-break-inside:avoid;margin-bottom:10px}
+    .card > h2{background:#eee !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .chip,.status,.st{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+  @media (max-width:560px){
+    .item .nome{flex:1 1 100%}
+    .status{margin-left:0}
+    th:nth-child(4),td:nth-child(4){display:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>CHECKLIST DE CAMINHÕES<small id="hdrSub">Inspeção diária de frota</small></h1>
+  <nav>
+    <button id="tabNovo" class="active" onclick="irNovo()">＋ Novo</button>
+    <button id="tabHist" onclick="irHist()">Histórico</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ====================== FORMULÁRIO ====================== -->
+<section id="pgForm">
+
+  <div class="card">
+    <h2>Identificação</h2>
+    <div class="pad grid">
+      <div><label for="data">Data</label><input type="date" id="data"></div>
+      <div><label for="hora">Hora</label><input type="time" id="hora"></div>
+      <div><label for="placa">Placa</label><input type="text" id="placa" placeholder="ABC-1D23" maxlength="10" style="text-transform:uppercase"></div>
+      <div><label for="km">KM (odômetro)</label><input type="number" id="km" placeholder="0" min="0"></div>
+      <div><label for="motorista">Motorista</label><input type="text" id="motorista" placeholder="Nome do condutor"></div>
+      <div><label for="veiculo">Veículo / Frota</label><input type="text" id="veiculo" placeholder="Ex.: Truck 08"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Itens de inspeção</h2>
+    <div id="itens"></div>
+  </div>
+
+  <div class="card">
+    <h2>Documentação</h2>
+    <div id="docs"></div>
+    <div class="pad grid" style="border-top:1px solid #eef1f5">
+      <div><label for="crlvVal">Validade do CRLV</label><input type="date" id="crlvVal"></div>
+      <div><label for="tacoVal">Validade da aferição do tacógrafo</label><input type="date" id="tacoVal"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Lona</h2>
+    <div class="pad grid">
+      <div>
+        <label for="lonaTem">O veículo possui lona?</label>
+        <select id="lonaTem" onchange="toggleLona()">
+          <option value="Não">Não</option>
+          <option value="Sim">Sim</option>
+        </select>
+      </div>
+      <div id="wrapLonaCond" class="hide">
+        <label for="lonaCond">Condição da lona</label>
+        <select id="lonaCond">
+          <option value="Boas condições">Boas condições</option>
+          <option value="Danificada / precisa troca">Danificada / precisa troca</option>
+        </select>
+      </div>
+      <div id="wrapLonaObs" class="hide" style="grid-column:1/-1">
+        <label for="lonaObs">Observações da lona</label>
+        <input type="text" id="lonaObs" placeholder="Ex.: rasgo lateral direito, catraca solta...">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Resumo</h2>
+    <div class="resumo" id="resumo"></div>
+    <div class="pad" style="border-top:1px solid #eef1f5">
+      <label for="obsGeral">Observações gerais</label>
+      <textarea id="obsGeral" placeholder="Anotações, avarias encontradas, providências..."></textarea>
+    </div>
+  </div>
+
+  <div class="bar">
+    <button class="btn" onclick="salvar()">💾 Salvar checklist</button>
+    <button class="btn sec" onclick="marcarTodos()">✓ Marcar tudo OK</button>
+    <button class="btn sec" onclick="limpar(true)">↺ Limpar</button>
+  </div>
+</section>
+
+<!-- ====================== HISTÓRICO ====================== -->
+<section id="pgHist" class="hide">
+  <div class="bar">
+    <input type="search" id="busca" placeholder="Buscar por placa, motorista ou data..." oninput="renderHist()" style="flex:1 1 220px;max-width:340px">
+    <button class="btn sec sm" onclick="exportarCSV()">⬇ Exportar CSV</button>
+    <button class="btn danger sm" onclick="apagarTudo()">Apagar tudo</button>
+  </div>
+  <div class="card"><div id="tabelaHist"></div></div>
+</section>
+
+<!-- ====================== VISUALIZAÇÃO ====================== -->
+<section id="pgView" class="hide">
+  <div class="bar noprint">
+    <button class="btn sec" onclick="irHist()">← Voltar</button>
+    <button class="btn" onclick="window.print()">🖨 Imprimir / Salvar PDF</button>
+  </div>
+  <div id="view"></div>
+</section>
+
+</main>
+
+<script>
+/* ---------------- Definição dos itens ---------------- */
+const ITENS = [
+  {id:'pneus',        nome:'Pneus',                      dica:'Calibragem, sulco, cortes, estepe'},
+  {id:'lanternas',    nome:'Lanternas',                  dica:'Dianteiras, traseiras e laterais'},
+  {id:'setas',        nome:'Setas',                      dica:'Pisca-alerta e indicadores'},
+  {id:'luzfreio',     nome:'Luz de freio',               dica:'Inclusive brake-light'},
+  {id:'retrovisores', nome:'Retrovisores',               dica:'Fixação, ajuste e integridade'},
+  {id:'limpadores',   nome:'Limpadores de para-brisa',   dica:'Palhetas e esguicho de água'},
+  {id:'oleo',         nome:'Óleo do motor',              dica:'Nível na vareta'},
+  {id:'arrefecimento',nome:'Líquido de arrefecimento',   dica:'Nível no reservatório'},
+  {id:'vazamentos',   nome:'Vazamentos aparentes',       dica:'OK = nenhum vazamento identificado'},
+  {id:'freio',        nome:'Freio',                      dica:'Curso do pedal, ar, freio de estacionamento'},
+  {id:'buzina',       nome:'Buzina',                     dica:'Funcionamento e sonoridade'},
+  {id:'carroceria',   nome:'Carroceria / Baú',           dica:'Estrutura, portas, travas e assoalho'}
+];
+const DOCS = [
+  {id:'crlv',      nome:'CRLV',       dica:'Certificado de Registro e Licenciamento do Veículo — dentro do prazo'},
+  {id:'tacografo', nome:'Tacógrafo',  dica:'Aferição válida (INMETRO) e disco/registro em uso'}
+];
+const TODOS = [...ITENS, ...DOCS];
+const KEY = 'checklist_caminhoes_v1';
+const ROTULO = {OK:'Conforme', NC:'Não conforme', NA:'N/A'};
+
+/* ---------------- Montagem do formulário ---------------- */
+function linhaItem(it){
+  return `<div class="item">
+    <div class="nome">${it.nome}<span>${it.dica}</span></div>
+    <div class="opts">
+      ${['OK','NC','NA'].map(v=>`<label><input type="radio" name="${it.id}" value="${v}" onchange="atualizaResumo()"><span>${v==='OK'?'OK':v==='NC'?'Não conf.':'N/A'}</span></label>`).join('')}
+    </div>
+    <div class="obs"><input type="text" id="obs_${it.id}" placeholder="Observação (opcional)"></div>
+  </div>`;
+}
+document.getElementById('itens').innerHTML = ITENS.map(linhaItem).join('');
+document.getElementById('docs').innerHTML  = DOCS.map(linhaItem).join('');
+
+/* ---------------- Helpers ---------------- */
+const $ = id => document.getElementById(id);
+const val = id => ($(id).value || '').trim();
+const getStatus = id => (document.querySelector(`input[name="${id}"]:checked`)||{}).value || '';
+const esc = s => String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dataBR = d => d ? d.split('-').reverse().join('/') : '—';
+
+function toast(msg){
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(),2600);
+}
+function toggleLona(){
+  const tem = val('lonaTem')==='Sim';
+  $('wrapLonaCond').classList.toggle('hide', !tem);
+  $('wrapLonaObs').classList.toggle('hide', !tem);
+  atualizaResumo();
+}
+function marcarTodos(){
+  TODOS.forEach(it=>{ const r=document.querySelector(`input[name="${it.id}"][value="OK"]`); if(r) r.checked=true; });
+  atualizaResumo();
+}
+
+/* ---------------- Resumo e status geral ---------------- */
+function calcula(){
+  let ok=0,nc=0,na=0,pend=0;
+  TODOS.forEach(it=>{ const s=getStatus(it.id); s==='OK'?ok++ : s==='NC'?nc++ : s==='NA'?na++ : pend++; });
+  return {ok,nc,na,pend};
+}
+function statusGeral(nc, lonaRuim){
+  const critico = ['freio','pneus','luzfreio','vazamentos','crlv','tacografo'];
+  const temCritico = critico.some(id=>getStatus(id)==='NC');
+  if(temCritico) return 'REPROVADO';
+  if(nc>0 || lonaRuim) return 'APROVADO C/ RESTRIÇÃO';
+  return 'APROVADO';
+}
+function atualizaResumo(){
+  const c = calcula();
+  const lonaRuim = val('lonaTem')==='Sim' && val('lonaCond')!=='Boas condições';
+  const st = statusGeral(c.nc, lonaRuim);
+  const cls = st==='APROVADO'?'aprovado':st==='REPROVADO'?'reprovado':'restricao';
+  $('resumo').innerHTML =
+    `<span class="chip ok">Conformes: ${c.ok}</span>
+     <span class="chip nc">Não conformes: ${c.nc}</span>
+     <span class="chip na">N/A: ${c.na}</span>
+     <span class="chip pend">Pendentes: ${c.pend}</span>
+     <span class="status ${cls}">${st}</span>`;
+}
+
+/* ---------------- Persistência ---------------- */
+const load = () => { try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; } };
+const save = arr => localStorage.setItem(KEY, JSON.stringify(arr));
+
+function salvar(){
+  if(!val('placa')) return toast('Informe a placa do veículo.');
+  if(!val('data'))  return toast('Informe a data.');
+  const c = calcula();
+  if(c.pend > 0 && !confirm(`Existem ${c.pend} item(ns) sem resposta. Salvar mesmo assim?`)) return;
+
+  const lonaTem = val('lonaTem');
+  const reg = {
+    id: 'CL' + Date.now(),
+    data: val('data'), hora: val('hora'),
+    placa: val('placa').toUpperCase(), km: val('km'),
+    motorista: val('motorista'), veiculo: val('veiculo'),
+    itens: {}, obs: {},
+    crlvVal: val('crlvVal'), tacoVal: val('tacoVal'),
+    lonaTem,
+    lonaCond: lonaTem==='Sim' ? val('lonaCond') : '',
+    lonaObs:  lonaTem==='Sim' ? val('lonaObs')  : '',
+    obsGeral: val('obsGeral'),
+    resumo: c,
+    status: statusGeral(c.nc, lonaTem==='Sim' && val('lonaCond')!=='Boas condições')
+  };
+  TODOS.forEach(it=>{ reg.itens[it.id]=getStatus(it.id); reg.obs[it.id]=val('obs_'+it.id); });
+
+  const arr = load(); arr.unshift(reg); save(arr);
+  toast('Checklist salvo com sucesso!');
+  limpar(false); irHist();
+}
+
+function limpar(aviso){
+  if(aviso && !confirm('Limpar todos os campos do formulário?')) return;
+  document.querySelectorAll('#pgForm input[type="text"],#pgForm input[type="number"],#pgForm input[type="date"],#pgForm input[type="time"],#pgForm textarea')
+    .forEach(e=>e.value='');
+  document.querySelectorAll('#pgForm input[type="radio"]').forEach(e=>e.checked=false);
+  $('lonaTem').value='Não'; $('lonaCond').value='Boas condições';
+  const agora = new Date();
+  $('data').value = agora.toISOString().slice(0,10);
+  $('hora').value = agora.toTimeString().slice(0,5);
+  toggleLona();
+}
+
+/* ---------------- Navegação ---------------- */
+function mostra(pg){
+  ['pgForm','pgHist','pgView'].forEach(p=>$(p).classList.toggle('hide', p!==pg));
+  $('tabNovo').classList.toggle('active', pg==='pgForm');
+  $('tabHist').classList.toggle('active', pg==='pgHist');
+  window.scrollTo(0,0);
+}
+function irNovo(){ mostra('pgForm'); }
+function irHist(){ renderHist(); mostra('pgHist'); }
+
+/* ---------------- Histórico ---------------- */
+function renderHist(){
+  const q = (val('busca')||'').toLowerCase();
+  const arr = load().filter(r =>
+    !q || [r.placa,r.motorista,r.veiculo,dataBR(r.data)].join(' ').toLowerCase().includes(q));
+
+  if(!arr.length){
+    $('tabelaHist').innerHTML = '<div class="vazio">Nenhum checklist encontrado.</div>';
+    return;
+  }
+  $('tabelaHist').innerHTML = `<table>
+    <thead><tr><th>Data</th><th>Placa</th><th>KM</th><th>Motorista</th><th>Situação</th><th></th></tr></thead>
+    <tbody>${arr.map(r=>`<tr>
+      <td>${dataBR(r.data)}${r.hora?' '+r.hora:''}</td>
+      <td><b>${esc(r.placa)}</b></td>
+      <td>${esc(r.km)||'—'}</td>
+      <td>${esc(r.motorista)||'—'}</td>
+      <td><span class="tag ${r.status==='APROVADO'?'aprovado':r.status==='REPROVADO'?'reprovado':'restricao'}">${r.status}</span></td>
+      <td style="text-align:right;white-space:nowrap">
+        <button class="btn sec sm" onclick="ver('${r.id}')">Ver</button>
+        <button class="btn danger sm" onclick="apagar('${r.id}')">Excluir</button>
+      </td></tr>`).join('')}</tbody></table>`;
+}
+function apagar(id){
+  if(!confirm('Excluir este checklist?')) return;
+  save(load().filter(r=>r.id!==id)); renderHist(); toast('Checklist excluído.');
+}
+function apagarTudo(){
+  if(!load().length) return toast('Não há registros.');
+  if(!confirm('Isso apagará TODOS os checklists salvos. Continuar?')) return;
+  save([]); renderHist(); toast('Todos os registros foram apagados.');
+}
+
+/* ---------------- Visualização ---------------- */
+function ver(id){
+  const r = load().find(x=>x.id===id); if(!r) return;
+  const linha = it => {
+    const s = r.itens[it.id] || '';
+    return `<div class="linha"><b>${it.nome}</b>
+      <span class="st ${s}">${ROTULO[s] || 'Não informado'}</span>
+      <span class="o">${esc(r.obs[it.id]||'')}</span></div>`;
+  };
+  const cls = r.status==='APROVADO'?'aprovado':r.status==='REPROVADO'?'reprovado':'restricao';
+  $('view').innerHTML = `
+    <div class="card">
+      <h2>Checklist de caminhão — ${esc(r.placa)}</h2>
+      <div class="pad grid">
+        <div><label>Data</label>${dataBR(r.data)} ${esc(r.hora)}</div>
+        <div><label>Placa</label><b>${esc(r.placa)}</b></div>
+        <div><label>KM</label>${esc(r.km)||'—'}</div>
+        <div><label>Motorista</label>${esc(r.motorista)||'—'}</div>
+        <div><label>Veículo / Frota</label>${esc(r.veiculo)||'—'}</div>
+        <div><label>Situação</label><span class="status ${cls}">${r.status}</span></div>
+      </div>
+    </div>
+    <div class="card"><h2>Itens de inspeção</h2>${ITENS.map(linha).join('')}</div>
+    <div class="card"><h2>Documentação</h2>${DOCS.map(linha).join('')}
+      <div class="pad grid" style="border-top:1px solid #eef1f5">
+        <div><label>Validade do CRLV</label>${dataBR(r.crlvVal)}</div>
+        <div><label>Validade aferição tacógrafo</label>${dataBR(r.tacoVal)}</div>
+      </div>
+    </div>
+    <div class="card"><h2>Lona</h2>
+      <div class="pad grid">
+        <div><label>Possui lona</label>${esc(r.lonaTem)}</div>
+        <div><label>Condição</label>${esc(r.lonaCond)||'—'}</div>
+        <div style="grid-column:1/-1"><label>Observações</label>${esc(r.lonaObs)||'—'}</div>
+      </div>
+    </div>
+    <div class="card"><h2>Resumo</h2>
+      <div class="resumo">
+        <span class="chip ok">Conformes: ${r.resumo.ok}</span>
+        <span class="chip nc">Não conformes: ${r.resumo.nc}</span>
+        <span class="chip na">N/A: ${r.resumo.na}</span>
+        <span class="chip pend">Não informados: ${r.resumo.pend}</span>
+      </div>
+      <div class="pad" style="border-top:1px solid #eef1f5">
+        <label>Observações gerais</label>${esc(r.obsGeral)||'—'}
+      </div>
+      <div class="assin">
+        <div>Assinatura do motorista</div>
+        <div>Assinatura do responsável</div>
+      </div>
+    </div>`;
+  mostra('pgView');
+}
+
+/* ---------------- Exportação CSV ---------------- */
+function exportarCSV(){
+  const arr = load();
+  if(!arr.length) return toast('Não há registros para exportar.');
+  const cab = ['Data','Hora','Placa','KM','Motorista','Veiculo','Situacao',
+    ...TODOS.map(i=>i.nome), ...TODOS.map(i=>'Obs. '+i.nome),
+    'Validade CRLV','Validade Tacografo','Possui lona','Condicao da lona','Obs. lona','Observacoes gerais'];
+  const cel = v => `"${String(v??'').replace(/"/g,'""')}"`;
+  const linhas = arr.map(r=>[
+    dataBR(r.data), r.hora, r.placa, r.km, r.motorista, r.veiculo, r.status,
+    ...TODOS.map(i=>ROTULO[r.itens[i.id]]||''),
+    ...TODOS.map(i=>r.obs[i.id]||''),
+    dataBR(r.crlvVal), dataBR(r.tacoVal), r.lonaTem, r.lonaCond, r.lonaObs, r.obsGeral
+  ].map(cel).join(';'));
+
+  const blob = new Blob(['﻿'+[cab.map(cel).join(';'),...linhas].join('\r\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'checklist-caminhoes.csv';
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('Arquivo CSV gerado.');
+}
+
+/* ---------------- Início ---------------- */
+limpar(false);
+atualizaResumo();
+</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "name": "checklist-caminhoes",
+  "version": "1.0.0",
+  "description": "Sistema de checklist de inspeção de caminhões — API REST + banco de dados SQLite + painel web",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node src/db/migrate.js",
+    "seed": "node src/db/seed.js",
+    "reset": "node src/db/reset.js",
+    "recalcular": "node src/db/recalcular.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7"
+  },
+  "keywords": ["checklist", "frota", "caminhoes", "inspecao", "sqlite"],
+  "license": "UNLICENSED"
+}
